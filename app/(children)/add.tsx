@@ -1,39 +1,27 @@
 import { useState } from 'react';
-import { StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ui/ThemedText';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/ui/Button';
-import { ErrorText } from '@/components/common/ErrorText';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-type FormData = {
-  name: string;
-  age: string;
-  dailyTasks: string;
-  routines: string;
-};
-
-type FormErrors = {
-  [K in keyof FormData]?: string;
-};
+import { addChild } from '@/services/api';
 
 export default function AddChildScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() || 'light';
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     name: '',
     age: '',
     dailyTasks: '',
     routines: '',
   });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
-    const newErrors: FormErrors = {};
+    const newErrors: Record<string, string> = {};
     
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
@@ -54,11 +42,17 @@ export default function AddChildScreen() {
     
     setIsLoading(true);
     try {
-      // TODO: Implement save logic
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await addChild({
+        name: formData.name,
+        age: Number(formData.age),
+        tasks: formData.dailyTasks.split('\n').filter(Boolean),
+        routines: formData.routines.split('\n').filter(Boolean),
+      });
+      Alert.alert('Success', 'Child added successfully');
       router.back();
     } catch (error) {
       console.error('Failed to save child:', error);
+      Alert.alert('Error', 'Failed to save child');
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +69,7 @@ export default function AddChildScreen() {
           value={formData.name}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, name: text }));
-            if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
+            if (errors.name) setErrors(prev => ({ ...prev, name: '' }));
           }}
           placeholder="Enter child's name"
           error={errors.name}
@@ -86,7 +80,7 @@ export default function AddChildScreen() {
           value={formData.age}
           onChangeText={(text) => {
             setFormData(prev => ({ ...prev, age: text }));
-            if (errors.age) setErrors(prev => ({ ...prev, age: undefined }));
+            if (errors.age) setErrors(prev => ({ ...prev, age: '' }));
           }}
           placeholder="Enter child's age"
           keyboardType="numeric"
@@ -97,7 +91,7 @@ export default function AddChildScreen() {
           label="Daily Tasks"
           value={formData.dailyTasks}
           onChangeText={(text) => setFormData(prev => ({ ...prev, dailyTasks: text }))}
-          placeholder="Enter daily tasks (e.g., Homework, Reading, etc.)"
+          placeholder="Enter daily tasks (one per line)"
           multiline
           numberOfLines={3}
         />
@@ -106,7 +100,7 @@ export default function AddChildScreen() {
           label="Routines"
           value={formData.routines}
           onChangeText={(text) => setFormData(prev => ({ ...prev, routines: text }))}
-          placeholder="Enter routines (e.g., Bedtime at 8 PM)"
+          placeholder="Enter routines (one per line)"
           multiline
           numberOfLines={3}
         />

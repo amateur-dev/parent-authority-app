@@ -1,76 +1,66 @@
-import { CONFIG } from '@/constants/config';
+const API_URL = 'http://localhost:3000';  // For development
 
-class ApiService {
-  private baseUrl: string;
-  private token: string | null = null;
+export interface Child {
+  id?: number;
+  name: string;
+  age: number;
+  tasks: string[];
+  routines: string[];
+}
 
-  constructor() {
-    this.baseUrl = CONFIG.API_URL;
-  }
-
-  setToken(token: string) {
-    this.token = token;
-  }
-
-  private async fetch<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
-      ...options.headers,
-    };
-
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error('API request failed');
-    }
-
+export async function fetchChildren(): Promise<Child[]> {
+  try {
+    const response = await fetch(`${API_URL}/children`);
+    if (!response.ok) throw new Error('Failed to fetch children');
     return response.json();
-  }
-
-  // Children endpoints
-  async getChildren() {
-    return this.fetch('/children');
-  }
-
-  async getChild(id: string) {
-    return this.fetch(`/children/${id}`);
-  }
-
-  async createChild(data: { name: string; age: number }) {
-    return this.fetch('/children', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateChild(id: string, data: Partial<{ name: string; age: number }>) {
-    return this.fetch(`/children/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  // Tasks endpoints
-  async createTask(childId: string, data: { title: string }) {
-    return this.fetch(`/children/${childId}/tasks`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateTask(childId: string, taskId: string, data: { completed: boolean }) {
-    return this.fetch(`/children/${childId}/tasks/${taskId}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+  } catch (error) {
+    console.error('Error fetching children:', error);
+    throw error;
   }
 }
 
-export const api = new ApiService(); 
+export async function addChild(child: Omit<Child, 'id'>): Promise<Child> {
+  try {
+    const response = await fetch(`${API_URL}/children`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(child),
+    });
+    if (!response.ok) throw new Error('Failed to add child');
+    return response.json();
+  } catch (error) {
+    console.error('Error adding child:', error);
+    throw error;
+  }
+}
+
+export async function updateChild(id: number, child: Partial<Child>): Promise<Child> {
+  try {
+    const response = await fetch(`${API_URL}/children/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(child),
+    });
+    if (!response.ok) throw new Error('Failed to update child');
+    return response.json();
+  } catch (error) {
+    console.error('Error updating child:', error);
+    throw error;
+  }
+}
+
+export async function deleteChild(id: number): Promise<void> {
+  try {
+    const response = await fetch(`${API_URL}/children/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete child');
+  } catch (error) {
+    console.error('Error deleting child:', error);
+    throw error;
+  }
+} 
