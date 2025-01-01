@@ -4,15 +4,23 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ChildCard } from '@/components/children/ChildCard';
 import { Button } from '@/components/common/Button';
+import { useRouter } from 'expo-router';
 
 export default function ChildrenScreen() {
+  const router = useRouter();
+
+  const handleAddChild = () => {
+    router.push('/(children)/add');
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Children</ThemedText>
-        <Link href="/children/add" asChild>
-          <Button title="Add Child" />
-        </Link>
+        <Button 
+          title="Add Child" 
+          onPress={handleAddChild}
+        />
       </ThemedView>
       
       <ScrollView style={styles.content}>

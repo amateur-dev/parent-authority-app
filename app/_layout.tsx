@@ -30,7 +30,7 @@ export default function RootLayout() {
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="(children)/add" 
+          name="add" 
           options={{ 
             presentation: 'modal',
             title: 'Add Child',

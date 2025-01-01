@@ -1,21 +1,19 @@
 import { StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemedText } from '@/components/ui/ThemedText';
 
-export function ErrorText({ children }: { children: string }) {
-  const colorScheme = useColorScheme() ?? 'light';
-  
+type Props = {
+  children: string;
+};
+
+export function ErrorText({ children }: Props) {
   return (
-    <ThemedText style={[styles.text, { color: Colors[colorScheme].error }]}>
-      {children}
-    </ThemedText>
+    <ThemedText style={styles.error}>{children}</ThemedText>
   );
 }
 
 const styles = StyleSheet.create({
-  text: {
+  error: {
+    color: '#E11D48',
     fontSize: 14,
-    marginTop: 4,
   },
 }); 
